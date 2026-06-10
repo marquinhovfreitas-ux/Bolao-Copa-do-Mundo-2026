@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bolão Copa">
+<meta name="theme-color" content="#006633">
+<meta name="description" content="Bolão da Copa do Mundo 2026 com jogos ao vivo, ranking, chat e pagamento PIX">
+<title>Bolão Copa 2026</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-bg2: #f5f5f5;
+    --color-bg3: #ececec;
+    --color-text: #1a1a1a;
+    --color-text2: #666666;
+    --color-text3: #999999;
+    --color-border: #e0e0e0;
+    --color-border2: #d0d0d0;
+    --color-green: #006633;
+    --color-green2: #004d26;
+    --color-gold: #FFD700;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg: #1a1a1a;
+      --color-bg2: #242424;
+      --color-bg3: #2e2e2e;
+      --color-text: #f0f0f0;
+      --color-text2: #aaaaaa;
+      --color-text3: #777777;
+      --color-border: #333333;
+      --color-border2: #444444;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--font);
+    background: var(--color-bg);
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--color-green);
+    padding: 12px 16px;
+    padding-top: calc(12px + var(--safe-top));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header h1 { color: var(--color-gold); font-size: 16px; font-weight: 600; }
+  .header p { color: rgba(255,255,255,.75); font-size: 11px; margin-top: 1px; }
+  .live-badge {
+    background: #E24B4A; color: #fff; font-size: 11px;
+    padding: 3px 8px; border-radius: 20px;
+    animation: pulse 1.5s infinite; font-weight: 600;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--color-bg2);
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 10px 12px; font-size: 12px; cursor: pointer;
+    color: var(--color-text2); border: none; background: none;
+    white-space: nowrap; border-bottom: 2px solid transparent;
+    display: flex; align-items: center; gap: 4px;
+    transition: .15s; flex-shrink: 0; font-family: var(--font);
+  }
+  .tab:hover { color: var(--color-text); }
+  .tab.active { color: var(--color-green); border-bottom-color: var(--color-green); font-weight: 600; }
+
+  /* CONTENT AREA */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    padding-bottom: calc(14px + var(--safe-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+  .content::-webkit-scrollbar { width: 3px; }
+  .content::-webkit-scrollbar-thumb { background: var(--color-border2); border-radius: 3px; }
+
+  .sec-title {
+    font-size: 14px; font-weight: 600; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 7px;
+  }
+
+  /* METRICS */
+  .metrics {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 7px; margin-bottom: 12px;
+  }
+  .metric {
+    background: var(--color-bg2); border-radius: var(--radius-sm);
+    padding: 9px 8px;
+  }
+  .metric-label { font-size: 10px; color: var(--color-text2); margin-bottom: 3px; }
+  .metric-val { font-size: 18px; font-weight: 700; }
+
+  /* FILTER */
+  .gc { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .gc-tag {
+    font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--color-border); color: var(--color-text2);
+    background: transparent; font-family: var(--font);
+  }
+  .gc-tag.on { background: var(--color-green); color: #fff; border-color: var(--color-green); }
+
+  /* GAME CARDS */
+  .games-grid { display: grid; gap: 8px; }
+  .game-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+  }
+  .game-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 8px;
+  }
+  .game-group { font-size: 11px; color: var(--color-text2); }
+  .gst { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+  .st-live { background: #FCEBEB; color: #A32D2D; }
+  .st-up   { background: #E6F1FB; color: #185FA5; }
+  .st-done { background: #EAF3DE; color: #3B6D11; }
+  .match {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    gap: 6px; align-items: center;
+  }
+  .team { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+  .team.r { flex-direction: row-reverse; text-align: right; }
+  .score-box {
+    background: var(--color-bg2); border: 1px solid var(--color-border);
+    border-radius: 8px; padding: 4px 10px; text-align: center; min-width: 56px;
+  }
+  .score-num { font-size: 17px; font-weight: 700; letter-spacing: 3px; }
+  .score-sub { font-size: 10px; color: var(--color-text2); margin-top: 1px; }
+  .pred-row {
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .pred-label { font-size: 11px; color: var(--color-text2); flex-shrink: 0; }
+  .pred-inputs { display: flex; align-items: center; gap: 5px; }
+  .pred-inp {
+    width: 34px; height: 32px; text-align: center; font-size: 14px; font-weight: 700;
+    border: 1px solid var(--color-border2); border-radius: 6px;
+    background: var(--color-bg); color: var(--color-text); font-family: var(--font);
+  }
+  .sv-btn {
+    font-size: 11px; padding: 5px 10px; background: var(--color-green);
+    color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: var(--font);
+  }
+  .pts-pill {
+    font-size: 11px; padding: 2px 7px; border-radius: 20px;
+    background: #EAF3DE; color: #3B6D11; font-weight: 600;
+  }
+
+  /* GRUPOS */
+  .groups-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .group-card {
+    background: var(--color-bg); border: 1px solid var(--color-border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .group-hd { background: var(--color-green); color: var(--color-gold); padding: 7px 12px; font-size: 12px; font-weight: 700; }
+  .group-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+  .group-table th { color: var(--color-text2); padding: 4px 6px; text-align: right; font-weight: 400; font-size: 10px; }
+  .group-table th:first-child { text-align: left; }
+  .group-table td { padding: 4px 6px; text-align: right; border-top: 1px solid var(--color-border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .group-table td:first-child { text-align: left; font-weight: 600; }
+  .qual { background: #E1F5EE; }
+  .qual td:first-child { border-left: 3px solid #1D9E75; }
+
+  /* RANKING */
+  .prize-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .prize-c { background: var(--color-bg2); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
+  .prize-ico { font-size: 18px; margin-bottom: 3px; }
+  .prize-nm { font-size: 12px; font-weight: 600; }
+  .prize-vl { font-size: 11px; color: #3B6D11; font-weight: 600; margin-top: 2px; }
+  .rank-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .rank-table th { font-size: 11px; color: var(--color-text2); padding: 7px 8px; text-align: left; border-bottom: 1px solid var(--color-border); font-weight: 400; }
+  .rank-table td { padding: 8px 8px; border-bottom: 1px solid var(--color-border); font-size: 12px; vertical-align: middle; }
+  .rank-table tr:active td { background: var(--color-bg2); }
+  .rnum { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .r1 { background: #FFD70033; color: #8B6914; }
+  .r2 { background: #D3D1C733; color: #444441; }
+  .r3 { background: #F5C4B333; color: #993C1D; }
+  .rn { background: var(--color-bg2); color: var(--color-text2); }
+  .pts-badge { background: #EAF3DE; color: #3B6D11; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .score-bar { height: 4px; border-radius: 2px; background: #1D9E75; margin-top: 3px; }
+
+  /* PONTUAÇÃO */
+  .pts-sys { background: var(--color-bg2); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+  .pts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .pts-item { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 10px; display: flex; align-items: center; gap: 10px; }
+  .pts-num { font-size: 20px; font-weight: 700; color: var(--color-green); min-width: 30px; }
+  .pts-desc { font-size: 12px; color: var(--color-text2); }
+  .pts-desc strong { display: block; color: var(--color-text); font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+  .calc-btn {
+    width: 100%; padding: 10px; background: var(--color-green); color: #fff;
+    border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: var(--font);
+  }
+  .calc-btn.sec { background: var(--color-bg2); color: var(--color-text); border: 1px solid var(--color-border); }
+
+  /* CHAT */
+  .chat-wrap { display: flex; flex-direction: column; height: 350px; }
+  .chat-msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+  .msg { max-width: 78%; display: flex; gap: 7px; }
+  .msg.mine { flex-direction: row-reverse; align-self: flex-end; }
+  .msg-av { width: 28px; height: 28px; border-radius: 50%; background: #378ADD; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .mine .msg-av { background: var(--color-green); }
+  .msg-bub { padding: 8px 11px; border-radius: 12px; background: var(--color-bg2); font-size: 13px; line-height: 1.5; }
+  .mine .msg-bub { background: #E1F5EE; color: #04342C; }
+  .msg-meta { font-size: 10px; color: var(--color-text3); margin-top: 2px; }
+  .mine .msg-meta { text-align: right; }
+  .online-bar { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; padding: 6px 10px; background: var(--color-bg2); border-radius: 20px; font-size: 11px; color: var(--color-text2); }
+  .odot { width: 7px; height: 7px; background: #1D9E75; border-radius: 50%; flex-shrink: 0; }
+  .chat-in-area { border-top: 1px solid var(--color-border); padding-top: 10px; display: flex; gap: 7px; margin-top: 8px; }
+  .chat-inp { flex: 1; padding: 10px 13px; border: 1px solid var(--color-border2); border-radius: 24px; font-size: 13px; background: var(--color-bg); color: var(--color-text); font-family: var(--font); }
+  .chat-inp:focus { outline: none; border-color: var(--color-green); }
+  .chat-send { width: 38px; height: 38px; border-radius: 50%; background: var(--color-green); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* FORMS */
+  .form-grp { margin-bottom: 12px; }
+  .form-lbl { font-size: 12px; font-weight: 600; margin-bottom: 5px; display: block; color: var(--color-text2); }
+  .form-inp {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--color-border2);
+    border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-text);
+    font-size: 14px; font-family: var(--font);
+  }
+  .form-inp:focus { outline: none; border-color: var(--color-green); box-shadow: 0 0 0 2px rgba(0,102,51,.15); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sub-btn {
+    width: 100%; padding: 12px; background: var(--color-green); color: #fff;
+    border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-family: var(--font);
+  }
+  .sub-btn:active { background: var(--color-green2); }
+  .ok-msg {
+    background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97;
+    border-radius: var(--radius-sm); padding: 11px; font-size: 13px;
+    display: flex; align-items: center; gap: 7px; margin-top: 10px;
+  }
+  .part-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; background: var(--color-bg); border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm); margin-bottom: 8px;
+  }
+  .av { width: 32px; height: 32px; border-radius: 50%; background: var(--color-green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .part-inf { flex: 1; margin-left: 10px; }
+  .part-nm { font-size: 13px; font-weight: 600; }
+  .part-st { font-size: 11px; color: var(--color-text2); }
+  .paid { background: #EAF3DE; color: #3B6D11; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
+  .pend { background: #FAEEDA; color: #854F0B; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
+
+  /* TRAVA PIX */
+  .lock-wall {
+    background: var(--color-bg); border: 1px solid var(--color-border);
+    border-radius: var(--radius); padding: 20px 16px; text-align: center; margin-bottom: 16px;
+  }
+  .lock-icon {
+    width: 56px; height: 56px; border-radius: 50%; background: #FAEEDA;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;
+  }
+  .lock-wall h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .lock-wall p { font-size: 13px; color: var(--color-text2); line-height: 1.6; margin-bottom: 12px; }
+  .valor-destaque { font-size: 30px; font-weight: 800; color: var(--color-green); margin: 6px 0 2px; }
+  .valor-sub { font-size: 12px; color: var(--color-text2); margin-bottom: 16px; }
+  .pix-card { background: var(--color-bg2); border-radius: var(--radius); padding: 14px; border: 1px solid var(--color-border); margin-bottom: 14px; }
+  .pix-label { font-size: 11px; color: var(--color-text2); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+  .qr-wrap { display: flex; justify-content: center; margin: 10px 0; }
+  .linha-box { background: var(--color-bg); border: 1px solid var(--color-border2); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .linha-txt { font-size: 9px; font-family: monospace; color: var(--color-text); word-break: break-all; flex: 1; text-align: left; }
+  .copy-btn { flex-shrink: 0; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-text2); font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: var(--font); }
+  .verify-sec { padding-top: 14px; border-top: 1px solid var(--color-border); }
+  .verify-lbl { font-size: 13px; color: var(--color-text2); margin-bottom: 8px; display: block; text-align: left; font-weight: 600; }
+  .verify-row { display: flex; gap: 8px; }
+  .verify-inp { flex: 1; padding: 10px 12px; border: 1px solid var(--color-border2); border-radius: var(--radius-sm); font-size: 14px; background: var(--color-bg); color: var(--color-text); font-family: monospace; }
+  .verify-inp:focus { outline: none; border-color: var(--color-green); }
+  .verify-btn { padding: 10px 14px; background: var(--color-green); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: var(--font); }
+  .verify-err { margin-top: 8px; padding: 9px 12px; background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; border-radius: var(--radius-sm); font-size: 13px; display: none; align-items: center; gap: 6px; }
+  .verify-ok  { margin-top: 8px; padding: 9px 12px; background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; border-radius: var(--radius-sm); font-size: 13px; display: none; align-items: center; gap: 6px; }
+
+  /* COMPROVANTE */
+  .sel-inp { width: 100%; margin-bottom: 8px; padding: 10px 12px; border: 1px solid var(--color-border2); border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-text); font-size: 14px; font-family: var(--font); }
+  .rec-card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; margin-top: 12px; }
+  .rec-hd { background: var(--color-green); padding: 16px; text-align: center; }
+  .rec-hd h3 { color: var(--color-gold); font-size: 16px; font-weight: 700; }
+  .rec-hd p { color: rgba(255,255,255,.75); font-size: 12px; margin-top: 2px; }
+  .rec-body { padding: 14px; }
+  .rec-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--color-border); font-size: 13px; }
+  .rec-row:last-child { border: none; }
+  .rec-total { background: var(--color-bg2); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .rec-footer { padding: 14px; border-top: 1px solid var(--color-border); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .rec-code { font-size: 11px; color: var(--color-text2); font-family: monospace; }
+  .exp-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; width: 100%; }
+  .exp-btn { padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-text); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--font); font-weight: 600; }
+  .exp-btn.pix { background: var(--color-green); color: #fff; border-color: var(--color-green); }
+
+  /* INSTALL BANNER */
+  #install-banner {
+    position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto;
+    background: var(--color-green); color: #fff; padding: 14px 16px;
+    padding-bottom: calc(14px + var(--safe-bottom));
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; z-index: 999; box-shadow: 0 -4px 20px rgba(0,0,0,.2);
+  }
+  #install-banner p { font-size: 13px; line-height: 1.4; }
+  #install-banner p strong { display: block; font-size: 14px; }
+  .install-btn { flex-shrink: 0; padding: 9px 16px; background: var(--color-gold); color: #000; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); }
+  .dismiss-btn { background: none; border: none; color: rgba(255,255,255,.7); font-size: 20px; cursor: pointer; padding: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <i class="ti ti-trophy" style="font-size:24px;color:#FFD700"></i>
+    <div>
+      <h1>Bolão Copa 2026</h1>
+      <p>EUA · México · Canadá · 11 Jun–19 Jul</p>
+    </div>
+  </div>
+  <span class="live-badge">● AO VIVO</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" onclick="showTab('jogos',this)"><i class="ti ti-ball-football"></i>Jogos</button>
+  <button class="tab" onclick="showTab('grupos',this)"><i class="ti ti-table"></i>Grupos</button>
+  <button class="tab" onclick="showTab('ranking',this)"><i class="ti ti-trophy"></i>Ranking</button>
+  <button class="tab" onclick="showTab('pontos',this)"><i class="ti ti-star"></i>Pontos</button>
+  <button class="tab" onclick="showTab('cadastro',this)"><i class="ti ti-user-plus"></i>Cadastro</button>
+  <button class="tab" onclick="showTab('chat',this)"><i class="ti ti-message-circle"></i>Chat</button>
+  <button class="tab" onclick="showTab('comprovante',this)"><i class="ti ti-receipt"></i>Comprovante</button>
+</div>
+
+<div class="content" id="main-content">
+
+<!-- JOGOS -->
+<div id="tab-jogos">
+  <div class="metrics" id="jogos-metrics"></div>
+  <div class="gc">
+    <span class="gc-tag on" onclick="filterGames('all',this)">Todos</span>
+    <span class="gc-tag" onclick="filterGames('live',this)">Ao vivo</span>
+    <span class="gc-tag" onclick="filterGames('upcoming',this)">Próximos</span>
+    <span class="gc-tag" onclick="filterGames('done',this)">Encerrados</span>
+  </div>
+  <div class="games-grid" id="games-container"></div>
+</div>
+
+<!-- GRUPOS -->
+<div id="tab-grupos" style="display:none">
+  <div class="sec-title"><i class="ti ti-table"></i>Tabela de grupos</div>
+  <div class="groups-grid" id="groups-container"></div>
+  <div style="margin-top:10px;font-size:11px;color:var(--color-text2);display:flex;align-items:center;gap:6px">
+    <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#E1F5EE;border-left:3px solid #1D9E75"></span>
+    Classificado para oitavas
+  </div>
+</div>
+
+<!-- RANKING -->
+<div id="tab-ranking" style="display:none">
+  <div class="prize-row">
+    <div class="prize-c"><div class="prize-ico">🥇</div><div class="prize-nm" id="p1n">—</div><div class="prize-vl">R$ 400</div></div>
+    <div class="prize-c"><div class="prize-ico">🥈</div><div class="prize-nm" id="p2n">—</div><div class="prize-vl">R$ 200</div></div>
+    <div class="prize-c"><div class="prize-ico">🥉</div><div class="prize-nm" id="p3n">—</div><div class="prize-vl">R$ 100</div></div>
+  </div>
+  <div class="sec-title"><i class="ti ti-list-numbers"></i>Classificação</div>
+  <div style="position:relative;width:100%;height:160px;margin-bottom:12px">
+    <canvas id="rankChart"></canvas>
+  </div>
+  <table class="rank-table">
+    <thead><tr><th style="width:36px">#</th><th>Participante</th><th>Pts</th><th>Ac.</th><th>Ex.</th></tr></thead>
+    <tbody id="ranking-body"></tbody>
+  </table>
+</div>
+
+<!-- PONTUAÇÃO -->
+<div id="tab-pontos" style="display:none">
+  <div class="sec-title"><i class="ti ti-star"></i>Sistema de pontuação</div>
+  <div class="pts-sys">
+    <div style="font-size:12px;color:var(--color-text2)">Como os pontos são calculados automaticamente</div>
+    <div class="pts-grid">
+      <div class="pts-item"><div class="pts-num">10</div><div class="pts-desc"><strong>Placar exato</strong>Resultado correto</div></div>
+      <div class="pts-item"><div class="pts-num">6</div><div class="pts-desc"><strong>Vencedor+saldo</strong>Time e diferença</div></div>
+      <div class="pts-item"><div class="pts-num">3</div><div class="pts-desc"><strong>Vencedor certo</strong>Só quem ganhou</div></div>
+      <div class="pts-item"><div class="pts-num">1</div><div class="pts-desc"><strong>Empate previsto</strong>Acertou o empate</div></div>
+      <div class="pts-item"><div class="pts-num">+5</div><div class="pts-desc"><strong>Campeão correto</strong>Bônus final</div></div>
+      <div class="pts-item"><div class="pts-num">0</div><div class="pts-desc"><strong>Errou tudo</strong>Palpite incorreto</div></div>
+    </div>
+  </div>
+  <div class="sec-title"><i class="ti ti-calculator"></i>Simular pontuação</div>
+  <div class="form-row" style="margin-bottom:10px">
+    <div class="form-grp"><label class="form-lbl">Meu palpite</label>
+      <div style="display:flex;align-items:center;gap:7px">
+        <input class="pred-inp form-inp" id="sim-p1" type="number" min="0" max="20" value="2" style="width:46px;text-align:center">
+        <span style="color:var(--color-text2)">×</span>
+        <input class="pred-inp form-inp" id="sim-p2" type="number" min="0" max="20" value="1" style="width:46px;text-align:center">
+      </div>
+    </div>
+    <div class="form-grp"><label class="form-lbl">Resultado real</label>
+      <div style="display:flex;align-items:center;gap:7px">
+        <input class="pred-inp form-inp" id="sim-r1" type="number" min="0" max="20" value="2" style="width:46px;text-align:center">
+        <span style="color:var(--color-text2)">×</span>
+        <input class="pred-inp form-inp" id="sim-r2" type="number" min="0" max="20" value="1" style="width:46px;text-align:center">
+      </div>
+    </div>
+  </div>
+  <button class="calc-btn" onclick="simularPontos()"><i class="ti ti-calculator"></i>Calcular</button>
+  <div id="sim-result" style="display:none;margin-top:10px;padding:14px;border-radius:var(--radius-sm);text-align:center"></div>
+  <div style="margin-top:14px">
+    <button class="calc-btn sec" onclick="recalcRanking()"><i class="ti ti-refresh"></i>Recalcular ranking de todos</button>
+    <div id="recalc-ok" style="display:none;margin-top:8px" class="ok-msg"><i class="ti ti-circle-check"></i><span id="recalc-msg"></span></div>
+  </div>
+</div>
+
+<!-- CADASTRO com trava PIX -->
+<div id="tab-cadastro" style="display:none">
+  <div id="pix-gate">
+    <div class="lock-wall">
+      <div class="lock-icon"><i class="ti ti-lock" style="font-size:26px;color:#854F0B"></i></div>
+      <h2>Inscrição bloqueada</h2>
+      <p>Pague via PIX para se inscrever no bolão.<br>Após o pagamento insira o código de confirmação.</p>
+      <div class="valor-destaque">R$ 20,00</div>
+      <div class="valor-sub">Taxa única · Bolão Copa 2026</div>
+      <div class="pix-card">
+        <div class="pix-label"><i class="ti ti-qrcode" style="font-size:13px"></i>QR Code PIX</div>
+        <div class="qr-wrap"><canvas id="qr-canvas" width="180" height="180" style="border:1px solid var(--color-border);border-radius:8px;padding:8px;background:#fff"></canvas></div>
+        <div class="pix-label" style="margin-top:6px"><i class="ti ti-list" style="font-size:13px"></i>Linha digitável (Copia e Cola)</div>
+        <div class="linha-box">
+          <span class="linha-txt" id="linha-txt">Gerando...</span>
+          <button class="copy-btn" onclick="copiarLinha()"><i class="ti ti-copy" style="font-size:13px"></i><span id="copy-lbl">Copiar</span></button>
+        </div>
+      </div>
+      <div class="verify-sec">
+        <span class="verify-lbl"><i class="ti ti-shield-check" style="font-size:14px"></i> Código de confirmação</span>
+        <div class="verify-row">
+          <input class="verify-inp" id="verify-code" placeholder="BLC-2026-XXXX" maxlength="20">
+          <button class="verify-btn" onclick="verificarCodigo()">Verificar</button>
+        </div>
+        <div class="verify-err" id="verify-err"><i class="ti ti-x" style="font-size:13px"></i><span id="verify-err-txt">Código inválido.</span></div>
+        <div class="verify-ok"  id="verify-ok"><i class="ti ti-circle-check" style="font-size:13px"></i>Pagamento confirmado!</div>
+        <div style="margin-top:10px;font-size:12px;color:var(--color-text2);text-align:center">
+          Não recebeu? <span style="color:var(--color-green);cursor:pointer;text-decoration:underline" onclick="reenviarCodigo()">Gerar novo código</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cadastro-form" style="display:none">
+    <div class="ok-msg" style="margin-bottom:14px"><i class="ti ti-circle-check" style="font-size:16px"></i><span>Pagamento confirmado! Complete seus dados.</span></div>
+    <div class="form-row">
+      <div class="form-grp"><label class="form-lbl">Nome completo</label><input class="form-inp" id="inp-nome" placeholder="João Silva"></div>
+      <div class="form-grp"><label class="form-lbl">Apelido</label><input class="form-inp" id="inp-apelido" placeholder="Jão"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-grp"><label class="form-lbl">WhatsApp</label><input class="form-inp" id="inp-phone" placeholder="(99) 99999-9999"></div>
+      <div class="form-grp"><label class="form-lbl">Palpite campeão</label>
+        <select class="form-inp" id="inp-campeao">
+          <option>🇧🇷 Brasil</option><option>🇦🇷 Argentina</option><option>🇫🇷 França</option>
+          <option>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</option><option>🇵🇹 Portugal</option><option>🇩🇪 Alemanha</option>
+          <option>🇪🇸 Espanha</option><option>🇺🇸 EUA</option><option>🇲🇽 México</option>
+        </select>
+      </div>
+    </div>
+    <button class="sub-btn" onclick="cadastrar()"><i class="ti ti-user-plus"></i>Confirmar inscrição</button>
+    <div id="cadastro-ok" style="display:none" class="ok-msg"><i class="ti ti-circle-check"></i><span>Inscrição concluída! Bem-vindo!</span></div>
+  </div>
+
+  <div style="margin-top:16px">
+    <div class="sec-title"><i class="ti ti-users"></i>Inscritos <span id="cnt-badge" style="font-size:11px;background:var(--color-bg2);padding:2px 8px;border-radius:20px;font-weight:400"></span></div>
+    <div id="participants-list"></div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="tab-chat" style="display:none">
+  <div class="online-bar"><span class="odot"></span><span id="online-count">5 online agora</span></div>
+  <div class="chat-wrap">
+    <div class="chat-msgs" id="chat-msgs"></div>
+    <div class="chat-in-area">
+      <input class="chat-inp" id="chat-text" placeholder="Mensagem..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="chat-send" onclick="sendMsg()"><i class="ti ti-send" style="font-size:16px"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPROVANTE -->
+<div id="tab-comprovante" style="display:none">
+  <div class="sec-title"><i class="ti ti-receipt"></i>Gerar comprovante</div>
+  <label class="form-lbl">Selecionar participante</label>
+  <select class="sel-inp" id="receipt-select"></select>
+  <button class="sub-btn" onclick="generateReceipt()"><i class="ti ti-file-download"></i>Gerar comprovante</button>
+  <div id="receipt-preview" style="display:none">
+    <div class="rec-card">
+      <div class="rec-hd"><h3>🏆 Bolão Copa 2026</h3><p>Comprovante oficial de inscrição</p></div>
+      <div class="rec-body">
+        <div class="rec-row"><span>Participante</span><strong id="r-nome"></strong></div>
+        <div class="rec-row"><span>Apelido</span><strong id="r-apelido"></strong></div>
+        <div class="rec-row"><span>Palpite campeão</span><strong id="r-campeao"></strong></div>
+        <div class="rec-row"><span>Pagamento</span><strong>PIX</strong></div>
+        <div class="rec-row"><span>Status</span><strong id="r-status"></strong></div>
+        <div class="rec-row"><span>Data</span><strong id="r-data"></strong></div>
+        <div class="rec-row"><span>Código</span><strong id="r-cod" style="color:var(--color-green);font-family:monospace"></strong></div>
+        <div class="rec-total"><span>Valor</span><strong id="r-valor" style="font-size:18px;color:var(--color-green)"></strong></div>
+      </div>
+      <div class="rec-footer">
+        <div class="rec-code" id="r-verify"></div>
+        <div style="font-size:11px;color:var(--color-text2)">PIX: 04539127535 (CPF)</div>
+        <div class="exp-btns">
+          <button class="exp-btn" onclick="exportTXT()"><i class="ti ti-file-text"></i>Salvar .txt</button>
+          <button class="exp-btn" onclick="shareWpp()"><i class="ti ti-brand-whatsapp"></i>WhatsApp</button>
+          <button class="exp-btn" onclick="copyReceipt()"><i class="ti ti-copy"></i>Copiar</button>
+          <button class="exp-btn pix" onclick="copyPix()"><i class="ti ti-qrcode"></i>Copiar PIX</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .content -->
+
+<!-- BANNER DE INSTALAÇÃO -->
+<div id="install-banner" style="display:none">
+  <p><strong>Instalar app</strong>Adicione à tela inicial, funciona offline!</p>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="install-btn" onclick="installApp()">Instalar</button>
+    <button class="dismiss-btn" onclick="dismissInstall()">✕</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── SERVICE WORKER ──────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW registrado:', r.scope))
+      .catch(e => console.log('SW erro:', e));
+  });
+}
+
+// ── PWA INSTALL ──────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('install-dismissed')) {
+    document.getElementById('install-banner').style.display = 'flex';
+  }
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(r => {
+    deferredPrompt = null;
+    document.getElementById('install-banner').style.display = 'none';
+  });
+}
+function dismissInstall() {
+  localStorage.setItem('install-dismissed','1');
+  document.getElementById('install-banner').style.display = 'none';
+}
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').style.display = 'none';
+});
+
+// ── PIX ──────────────────────────────────────────────────────────────────────
+const PIX_KEY="04539127535", PIX_NAME="ORGANIZADOR BOLAO", PIX_CITY="SAO PAULO", PIX_VALUE="20.00", PIX_DESC="BolaoC2026";
+
+function crc16(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?(c<<1)^0x1021:c<<1;}return(c&0xFFFF).toString(16).toUpperCase().padStart(4,'0');}
+function tlv(id,v){return id+String(v.length).padStart(2,'0')+v;}
+function gerarPixPayload(){
+  const gui=tlv("00","BR.GOV.BCB.PIX")+tlv("01",PIX_KEY);
+  let p=tlv("00","01")+tlv("26",gui)+tlv("52","0000")+tlv("53","986")+tlv("54",PIX_VALUE)+tlv("58","BR")+tlv("59",PIX_NAME.substring(0,25))+tlv("60",PIX_CITY.substring(0,15))+tlv("62",tlv("05",PIX_DESC.substring(0,25)))+"6304";
+  return p+crc16(p);
+}
+function gerarCodigo(){
+  const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code="BLC-2026-";
+  for(let i=0;i<4;i++) code+=c[Math.floor(Math.random()*c.length)];
+  return code;
+}
+let pixPayload="";
+const codigosValidos=new Set(["DEMO2026"]);
+
+function iniciarPix(){
+  pixPayload=gerarPixPayload();
+  codigosValidos.add(gerarCodigo());
+  document.getElementById("linha-txt").textContent=pixPayload;
+  const canvas=document.getElementById("qr-canvas");
+  if(window.QRCode){
+    QRCode.toCanvas(canvas,pixPayload,{width:180,margin:1,color:{dark:"#000",light:"#fff"}},()=>{});
+  }
+}
+function copiarLinha(){
+  navigator.clipboard.writeText(pixPayload).catch(()=>{});
+  const l=document.getElementById("copy-lbl");
+  l.textContent="Copiado!"; setTimeout(()=>l.textContent="Copiar",2000);
+}
+function verificarCodigo(){
+  const inp=document.getElementById("verify-code").value.trim().toUpperCase();
+  const err=document.getElementById("verify-err"), ok=document.getElementById("verify-ok");
+  err.style.display="none"; ok.style.display="none";
+  if(!inp){document.getElementById("verify-err-txt").textContent="Digite o código.";err.style.display="flex";return;}
+  if(codigosValidos.has(inp)){
+    ok.style.display="flex";
+    setTimeout(()=>{document.getElementById("pix-gate").style.display="none";document.getElementById("cadastro-form").style.display="block";},1200);
+  } else {
+    document.getElementById("verify-err-txt").textContent="Código inválido ou não encontrado.";
+    err.style.display="flex";
+    const c=document.getElementById("verify-code");
+    c.style.borderColor="#E24B4A"; setTimeout(()=>c.style.borderColor="",1500);
+  }
+}
+function reenviarCodigo(){
+  const novo=gerarCodigo(); codigosValidos.add(novo);
+  alert("Código (demonstração): "+novo+"\n\nEm produção, enviado via WhatsApp após confirmação do banco.");
+}
+
+// ── DADOS ──────────────────────────────────────────────────────────────────
+const GROUPS={
+  A:[{t:"🇦🇷 Argentina",j:3,v:2,e:0,d:1,gp:5,gc:2},{t:"🇵🇱 Polônia",j:3,v:1,e:1,d:1,gp:3,gc:3},{t:"🇲🇽 México",j:3,v:1,e:0,d:2,gp:2,gc:4},{t:"🇸🇦 Arábia S.",j:3,v:1,e:0,d:2,gp:1,gc:5}],
+  B:[{t:"🇫🇷 França",j:3,v:2,e:1,d:0,gp:6,gc:2},{t:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra",j:3,v:2,e:0,d:1,gp:4,gc:3},{t:"🇩🇰 Dinamarca",j:3,v:1,e:0,d:2,gp:3,gc:4},{t:"🇹🇳 Tunísia",j:3,v:0,e:1,d:2,gp:1,gc:5}],
+  C:[{t:"🇧🇷 Brasil",j:3,v:3,e:0,d:0,gp:7,gc:1},{t:"🇨🇭 Suíça",j:3,v:1,e:1,d:1,gp:4,gc:5},{t:"🇷🇸 Sérvia",j:3,v:1,e:0,d:2,gp:3,gc:4},{t:"🇨🇲 Camarões",j:3,v:0,e:1,d:2,gp:2,gc:6}],
+  D:[{t:"🇵🇹 Portugal",j:3,v:2,e:0,d:1,gp:6,gc:4},{t:"🇺🇾 Uruguai",j:3,v:1,e:1,d:1,gp:2,gc:3},{t:"🇰🇷 Coreia S.",j:3,v:1,e:1,d:1,gp:4,gc:4},{t:"🇬🇭 Gana",j:3,v:1,e:0,d:2,gp:5,gc:6}],
+  E:[{t:"🇪🇸 Espanha",j:3,v:1,e:2,d:0,gp:3,gc:2},{t:"🇩🇪 Alemanha",j:3,v:1,e:1,d:1,gp:6,gc:5},{t:"🇯🇵 Japão",j:3,v:2,e:0,d:1,gp:4,gc:3},{t:"🇨🇷 Costa Rica",j:3,v:0,e:1,d:2,gp:1,gc:4}],
+  F:[{t:"🇧🇪 Bélgica",j:3,v:2,e:0,d:1,gp:4,gc:2},{t:"🇭🇷 Croácia",j:3,v:1,e:2,d:0,gp:5,gc:3},{t:"🇲🇦 Marrocos",j:3,v:1,e:1,d:1,gp:4,gc:3},{t:"🇨🇦 Canadá",j:3,v:0,e:1,d:2,gp:1,gc:6}],
+  G:[{t:"🇺🇸 EUA",j:3,v:2,e:1,d:0,gp:5,gc:2},{t:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra",j:3,v:1,e:1,d:1,gp:3,gc:4},{t:"🇮🇷 Irã",j:3,v:1,e:0,d:2,gp:4,gc:5},{t:"🇼🇸 Gales",j:3,v:0,e:0,d:3,gp:0,gc:5}],
+  H:[{t:"🇵🇹 Portugal",j:3,v:2,e:1,d:0,gp:6,gc:3},{t:"🇺🇾 Uruguai",j:3,v:1,e:1,d:1,gp:3,gc:3},{t:"🇰🇷 Coreia S.",j:3,v:1,e:0,d:2,gp:4,gc:5},{t:"🇬🇭 Gana",j:3,v:1,e:0,d:2,gp:3,gc:5}]
+};
+
+const GAMES=[
+  {g:"Grupo A",t1:"🇧🇷",n1:"Brasil",t2:"🇦🇷",n2:"Argentina",s1:2,s2:1,st:"live",min:"63'"},
+  {g:"Grupo B",t1:"🇫🇷",n1:"França",t2:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",n2:"Inglaterra",s1:null,s2:null,st:"upcoming",min:"18:00"},
+  {g:"Grupo C",t1:"🇩🇪",n1:"Alemanha",t2:"🇪🇸",n2:"Espanha",s1:1,s2:1,st:"live",min:"45+2'"},
+  {g:"Grupo D",t1:"🇵🇹",n1:"Portugal",t2:"🇲🇽",n2:"México",s1:3,s2:0,st:"done",min:"FIM"},
+  {g:"Grupo E",t1:"🇺🇸",n1:"EUA",t2:"🇯🇵",n2:"Japão",s1:null,s2:null,st:"upcoming",min:"21:00"},
+  {g:"Grupo F",t1:"🇺🇾",n1:"Uruguai",t2:"🇧🇪",n2:"Bélgica",s1:0,s2:2,st:"done",min:"FIM"},
+  {g:"Grupo G",t1:"🇧🇷",n1:"Brasil",t2:"🇨🇭",n2:"Suíça",s1:1,s2:0,st:"done",min:"FIM"},
+  {g:"Grupo H",t1:"🇵🇹",n1:"Portugal",t2:"🇰🇷",n2:"Coreia",s1:2,s2:1,st:"done",min:"FIM"},
+];
+
+let participants=[
+  {nome:"Carlos Souza",apelido:"Carlão",campeao:"🇧🇷 Brasil",pago:true,pts:87,acertos:9,exatos:3,preds:{}},
+  {nome:"Mariana Lima",apelido:"Mari",campeao:"🇦🇷 Argentina",pago:true,pts:74,acertos:7,exatos:2,preds:{}},
+  {nome:"Pedro Alves",apelido:"Pedrão",campeao:"🇫🇷 França",pago:true,pts:61,acertos:6,exatos:1,preds:{}},
+  {nome:"Ana Costa",apelido:"Aninha",campeao:"🇧🇷 Brasil",pago:true,pts:58,acertos:5,exatos:2,preds:{}},
+  {nome:"Lucas Mendes",apelido:"Luca",campeao:"🇵🇹 Portugal",pago:true,pts:45,acertos:4,exatos:1,preds:{}},
+];
+
+let chatMsgs=[
+  {u:"Carlão",t:"Brasil vai ganhar! 🇧🇷🔥",min:"14:32",mine:false},
+  {u:"Mari",t:"Argentina ainda pode virar rs",min:"14:33",mine:false},
+  {u:"Você",t:"Que jogo tenso! 😅",min:"14:35",mine:true},
+  {u:"Pedrão",t:"Força França no 2º tempo!",min:"14:36",mine:false},
+];
+
+let predictions={}, gFilter="all", rankChart=null, currentReceipt=null;
+
+// ── LÓGICA ───────────────────────────────────────────────────────────────────
+function calcPts(p1,p2,r1,r2){
+  if(r1===null||r2===null) return 0;
+  const a=parseInt(p1),b=parseInt(p2);
+  if(isNaN(a)||isNaN(b)) return 0;
+  if(a===r1&&b===r2) return 10;
+  const pw=a>b?1:a<b?-1:0,rw=r1>r2?1:r1<r2?-1:0;
+  if(pw!==rw) return 0;
+  if(pw===0) return 1;
+  if((a-b)===(r1-r2)) return 6;
+  return 3;
+}
+
+function stLabel(st,min){
+  if(st==="live") return `<span class="gst st-live">● ${min}</span>`;
+  if(st==="done") return `<span class="gst st-done">${min}</span>`;
+  return `<span class="gst st-up">${min}</span>`;
+}
+
+function renderGames(){
+  const filtered=gFilter==="all"?GAMES:GAMES.filter(g=>g.st===gFilter);
+  const live=GAMES.filter(g=>g.st==="live").length, done=GAMES.filter(g=>g.st==="done").length, up=GAMES.filter(g=>g.st==="upcoming").length;
+  document.getElementById("jogos-metrics").innerHTML=`
+    <div class="metric"><div class="metric-label">Ao vivo</div><div class="metric-val" style="color:#A32D2D">${live}</div></div>
+    <div class="metric"><div class="metric-label">Encerrados</div><div class="metric-val" style="color:#3B6D11">${done}</div></div>
+    <div class="metric"><div class="metric-label">Próximos</div><div class="metric-val" style="color:#185FA5">${up}</div></div>
+    <div class="metric"><div class="metric-label">Palpites</div><div class="metric-val">${Object.keys(predictions).length}</div></div>`;
+  document.getElementById("games-container").innerHTML=filtered.map(g=>{
+    const i=GAMES.indexOf(g);
+    const score=g.st!=="upcoming"
+      ?`<div class="score-box"><div class="score-num">${g.s1} – ${g.s2}</div><div class="score-sub">${g.min}</div></div>`
+      :`<div class="score-box"><div style="font-size:11px;color:var(--color-text2)">vs</div><div class="score-sub">${g.min}</div></div>`;
+    const pred=predictions[i]||{s1:"",s2:""};
+    const scored=g.st==="done"&&pred.s1!==""
+      ?`<span class="pts-pill">${calcPts(pred.s1,pred.s2,g.s1,g.s2)} pts</span>`
+      :g.st==="live"&&pred.s1!==""
+        ?`<span class="pts-pill" style="background:#FAEEDA;color:#854F0B">${calcPts(pred.s1,pred.s2,g.s1,g.s2)} parcial</span>`:"";
+    return `<div class="game-card">
+      <div class="game-header"><span class="game-group">${g.g}</span>${stLabel(g.st,g.min)}</div>
+      <div class="match">
+        <div class="team"><span style="font-size:22px">${g.t1}</span><span>${g.n1}</span></div>
+        ${score}
+        <div class="team r"><span style="font-size:22px">${g.t2}</span><span>${g.n2}</span></div>
+      </div>
+      <div class="pred-row">
+        <span class="pred-label">Palpite ${scored}</span>
+        <div class="pred-inputs">
+          <input class="pred-inp" type="number" min="0" max="20" value="${pred.s1}" placeholder="0" id="p${i}s1" inputmode="numeric">
+          <span style="font-size:12px;color:var(--color-text2)">×</span>
+          <input class="pred-inp" type="number" min="0" max="20" value="${pred.s2}" placeholder="0" id="p${i}s2" inputmode="numeric">
+          <button class="sv-btn" onclick="savePred(${i})">Salvar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function savePred(i){
+  predictions[i]={s1:document.getElementById(`p${i}s1`).value,s2:document.getElementById(`p${i}s2`).value};
+  saveState(); renderGames();
+}
+
+function filterGames(f,el){
+  gFilter=f;
+  document.querySelectorAll(".gc-tag").forEach(t=>t.classList.remove("on"));
+  el.classList.add("on"); renderGames();
+}
+
+function renderGroups(){
+  document.getElementById("groups-container").innerHTML=Object.entries(GROUPS).map(([gn,teams])=>{
+    const sorted=[...teams].sort((a,b)=>{
+      const pa=a.v*3+a.e,pb=b.v*3+b.e;
+      return pa!==pb?pb-pa:(b.gp-b.gc)-(a.gp-a.gc);
+    });
+    return `<div class="group-card"><div class="group-hd">Grupo ${gn}</div>
+      <table class="group-table"><thead><tr><th>Time</th><th>J</th><th>Pts</th><th>SG</th></tr></thead>
+      <tbody>${sorted.map((t,i)=>`<tr class="${i<2?'qual':''}">
+        <td>${t.t}</td><td>${t.j}</td><td>${t.v*3+t.e}</td><td>${t.gp-t.gc>0?'+'+(t.gp-t.gc):t.gp-t.gc}</td>
+      </tr>`).join("")}</tbody></table></div>`;
+  }).join("");
+}
+
+function renderRanking(){
+  const sorted=[...participants].sort((a,b)=>b.pts-a.pts);
+  document.getElementById("p1n").textContent=sorted[0]?.apelido||"—";
+  document.getElementById("p2n").textContent=sorted[1]?.apelido||"—";
+  document.getElementById("p3n").textContent=sorted[2]?.apelido||"—";
+  const maxPts=sorted[0]?.pts||1;
+  document.getElementById("ranking-body").innerHTML=sorted.map((p,i)=>{
+    const cls=i===0?"r1":i===1?"r2":i===2?"r3":"rn";
+    return `<tr><td><div class="rnum ${cls}">${i+1}</div></td>
+      <td><strong>${p.apelido}</strong><br><span style="font-size:10px;color:var(--color-text2)">${p.campeao}</span></td>
+      <td><span class="pts-badge">${p.pts}</span><div class="score-bar" style="width:${Math.round(p.pts/maxPts*100)}%"></div></td>
+      <td>${p.acertos}</td><td>${p.exatos}</td></tr>`;
+  }).join("");
+  if(window.Chart){
+    const ctx=document.getElementById("rankChart");
+    if(rankChart) rankChart.destroy();
+    rankChart=new window.Chart(ctx,{
+      type:"bar",
+      data:{labels:sorted.map(p=>p.apelido),datasets:[{label:"Pts",data:sorted.map(p=>p.pts),backgroundColor:sorted.map((_,i)=>i===0?"#FFD700":i===1?"#B4B2A9":i===2?"#F0997B":"#97C459"),borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:"rgba(128,128,128,.1)"},beginAtZero:true}},animation:{duration:400}}
+    });
+  }
+}
+
+function simularPontos(){
+  const pts=calcPts(document.getElementById("sim-p1").value,document.getElementById("sim-p2").value,parseInt(document.getElementById("sim-r1").value),parseInt(document.getElementById("sim-r2").value));
+  const el=document.getElementById("sim-result");
+  const msgs={10:"Placar exato! 🎯",6:"Vencedor e saldo corretos!",3:"Vencedor certo!",1:"Empate previsto!",0:"Palpite errado."};
+  const bg={10:"#EAF3DE",6:"#E1F5EE",3:"#E6F1FB",1:"#FAEEDA",0:"#FCEBEB"};
+  const tc={10:"#3B6D11",6:"#0F6E56",3:"#185FA5",1:"#854F0B",0:"#A32D2D"};
+  el.style.display="block";el.style.background=bg[pts];el.style.color=tc[pts];el.style.border=`1px solid ${tc[pts]}44`;
+  el.innerHTML=`<div style="font-size:32px;font-weight:800;margin-bottom:4px">${pts} pontos</div><div style="font-size:13px">${msgs[pts]}</div>`;
+}
+
+function recalcRanking(){
+  participants.forEach(p=>{
+    let pts=0,ac=0,ex=0;
+    GAMES.forEach((g,i)=>{
+      const pred=p.preds[i]||predictions[i];
+      if(pred&&g.st==="done"){const pp=calcPts(pred.s1,pred.s2,g.s1,g.s2);pts+=pp;if(pp>0)ac++;if(pp===10)ex++;}
+    });
+    p.pts=Math.max(p.pts,pts);p.acertos=Math.max(p.acertos,ac);p.exatos=Math.max(p.exatos,ex);
+  });
+  saveState(); renderRanking(); renderParticipants();
+  const ok=document.getElementById("recalc-ok");
+  document.getElementById("recalc-msg").textContent=`Pontuação atualizada com base nos ${GAMES.filter(g=>g.st==="done").length} jogos encerrados.`;
+  ok.style.display="flex"; setTimeout(()=>ok.style.display="none",4000);
+}
+
+function cadastrar(){
+  const nome=document.getElementById("inp-nome").value.trim();
+  if(!nome){alert("Informe o nome");return;}
+  participants.push({nome,apelido:document.getElementById("inp-apelido").value||nome.split(" ")[0],campeao:document.getElementById("inp-campeao").value,pago:true,pts:0,acertos:0,exatos:0,preds:{}});
+  saveState(); renderParticipants(); renderRanking();
+  document.getElementById("cadastro-ok").style.display="flex";
+  setTimeout(()=>{
+    document.getElementById("cadastro-form").style.display="none";
+    document.getElementById("pix-gate").style.display="block";
+    document.getElementById("verify-code").value="";
+    document.getElementById("verify-ok").style.display="none";
+    document.getElementById("cadastro-ok").style.display="none";
+    ["inp-nome","inp-apelido","inp-phone"].forEach(id=>document.getElementById(id).value="");
+    iniciarPix();
+  },2500);
+}
+
+function renderParticipants(){
+  document.getElementById("cnt-badge").textContent=`${participants.length} inscritos · R$ ${(participants.length*20).toFixed(0)} arrecadados`;
+  document.getElementById("participants-list").innerHTML=participants.map(p=>{
+    const ini=p.nome.split(" ").map(w=>w[0]).slice(0,2).join("");
+    return `<div class="part-item"><div class="av">${ini}</div><div class="part-inf"><div class="part-nm">${p.nome} <span style="color:var(--color-text2);font-weight:400">(${p.apelido})</span></div><div class="part-st">${p.campeao} · ${p.pts} pts</div></div><span class="paid">Pago</span></div>`;
+  }).join("");
+  const sel=document.getElementById("receipt-select");
+  if(sel) sel.innerHTML=participants.map((p,i)=>`<option value="${i}">${p.nome}</option>`).join("");
+}
+
+function renderChat(){
+  const c=document.getElementById("chat-msgs");
+  c.innerHTML=chatMsgs.map(m=>`<div class="msg${m.mine?" mine":""}">
+    <div class="msg-av">${m.u.slice(0,2).toUpperCase()}</div>
+    <div><div class="msg-bub">${m.t}</div><div class="msg-meta">${m.mine?"":m.u+" · "}${m.min}</div></div>
+  </div>`).join("");
+  c.scrollTop=c.scrollHeight;
+}
+
+function sendMsg(){
+  const inp=document.getElementById("chat-text"),txt=inp.value.trim();
+  if(!txt) return;
+  const now=new Date();
+  chatMsgs.push({u:"Você",t:txt,min:`${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`,mine:true});
+  inp.value=""; renderChat();
+  setTimeout(()=>{
+    const rs=["Haha concordo! 😂","Vai Brasil! 🇧🇷","Esse palpite foi ousado!","Tensão total! 👀","Que golaço!"];
+    const us=participants.map(p=>p.apelido);
+    chatMsgs.push({u:us[Math.floor(Math.random()*us.length)],t:rs[Math.floor(Math.random()*rs.length)],min:`${now.getHours()}:${String(now.getMinutes()+1).padStart(2,"0")}`,mine:false});
+    renderChat();
+  },1200);
+}
+
+function generateReceipt(){
+  const idx=parseInt(document.getElementById("receipt-select").value), p=participants[idx];
+  if(!p) return;
+  const d=new Date(), cod="BLC"+String(idx+1).padStart(3,"0")+d.getFullYear();
+  const verify=cod+"-"+Math.random().toString(36).slice(2,8).toUpperCase();
+  currentReceipt={p,cod,verify,d};
+  document.getElementById("r-nome").textContent=p.nome;
+  document.getElementById("r-apelido").textContent=p.apelido;
+  document.getElementById("r-campeao").textContent=p.campeao;
+  document.getElementById("r-status").innerHTML=`<span class="paid">Pago via PIX ✓</span>`;
+  document.getElementById("r-data").textContent=d.toLocaleDateString("pt-BR");
+  document.getElementById("r-cod").textContent=cod;
+  document.getElementById("r-valor").textContent="R$ 20,00";
+  document.getElementById("r-verify").textContent=verify;
+  document.getElementById("receipt-preview").style.display="block";
+}
+
+function getReceiptText(){
+  if(!currentReceipt) return "";
+  const{p,cod,verify,d}=currentReceipt;
+  return `=============================\n🏆 BOLÃO COPA 2026\nComprovante de Inscrição\n=============================\nParticipante: ${p.nome}\nApelido: ${p.apelido}\nPalpite campeão: ${p.campeao}\nPagamento: PIX ✓\nData: ${d.toLocaleDateString("pt-BR")}\nCódigo: ${cod}\nValor: R$ 20,00\n-----------------------------\nVerificação: ${verify}\nPIX organizador: 04539127535\n=============================`;
+}
+
+function exportTXT(){
+  const blob=new Blob([getReceiptText()],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=`comprovante_${currentReceipt?.cod||"bolao"}.txt`; a.click(); URL.revokeObjectURL(url);
+}
+function shareWpp(){ window.open(`https://wa.me/?text=${encodeURIComponent(getReceiptText())}`,'_blank'); }
+function copyReceipt(){
+  navigator.clipboard.writeText(getReceiptText()).catch(()=>{});
+  const btns=document.querySelectorAll(".exp-btn");
+  btns[2].innerHTML=`<i class="ti ti-check"></i>Copiado!`;
+  setTimeout(()=>btns[2].innerHTML=`<i class="ti ti-copy"></i>Copiar`,2000);
+}
+function copyPix(){
+  navigator.clipboard.writeText("04539127535").catch(()=>{});
+  const btn=document.querySelector(".exp-btn.pix");
+  btn.innerHTML=`<i class="ti ti-check"></i>Copiado!`;
+  setTimeout(()=>btn.innerHTML=`<i class="ti ti-qrcode"></i>Copiar PIX`,2000);
+}
+
+function showTab(name,el){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display="none");
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("tab-"+name).style.display="block";
+  el.classList.add("active");
+  document.getElementById("main-content").scrollTop=0;
+  if(name==="ranking") setTimeout(renderRanking,50);
+}
+
+function liveUpdate(){
+  GAMES.filter(g=>g.st==="live").forEach(g=>{
+    const m=parseInt(g.min)||0;
+    if(m>=90){g.st="done";g.min="FIM";}
+    else{g.min=(m+1)+"'";if(Math.random()<0.04){if(Math.random()<0.5)g.s1++;else g.s2++;}}
+  });
+  if(document.getElementById("tab-jogos").style.display!=="none") renderGames();
+}
+
+// ── PERSISTÊNCIA LOCAL ───────────────────────────────────────────────────────
+function saveState(){
+  try{ localStorage.setItem("bolao-participants", JSON.stringify(participants)); } catch(e){}
+}
+function loadState(){
+  try{
+    const s=localStorage.getItem("bolao-participants");
+    if(s) participants=JSON.parse(s);
+  } catch(e){}
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadState();
+renderGames(); renderGroups(); renderRanking(); renderParticipants(); renderChat();
+setTimeout(iniciarPix, 400);
+setInterval(liveUpdate, 8000);
+</script>
+</body>
+</html>
